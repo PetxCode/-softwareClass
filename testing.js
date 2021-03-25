@@ -1,5 +1,5 @@
 const http = require("http");
-const port = 2300;
+const port = 2500;
 
 const game = [
   { id: 1, name: "Nitendo" },
@@ -7,47 +7,50 @@ const game = [
 ];
 
 const server = http.createServer((req, res) => {
-  const { method, url, headers } = req;
-  res.writeHead(200, { "Content-Type": "Application/json" });
+  const { method, url } = req;
+  const bodySection = [];
 
-  let body = [];
   req
     .on("data", (chunk) => {
-      body.push(chunk);
+      bodySection.push(chunk);
     })
     .on("end", () => {
-      body = Buffer.concat(body).toString();
+      body = Buffer.concat(bodySection).toString();
 
       let status = 404;
       const response = {
-        result: false,
+        report: "failed",
         data: null,
       };
 
-      //Get method
-      if (method === "GET" && url === "/software") {
+      if (method === "GET" && url === "/") {
         status = 200;
-        response.result = true;
+        response.report = "good";
         response.data = game;
       }
 
-      //Post method
-      if (method === "POST" && url === "/software") {
+      if (method === "POST" && url === "/") {
         const { id, name } = JSON.parse(body);
+
         if (!id || !name) {
           status = 404;
+          response.report = "failed";
+          response.mgs = "either id or name is missing";
+          response.data = null;
         } else {
           game.push({ id, name });
-          status = 200;
-          response.result = true;
+
+          status = 201;
+          response.report = "Created";
           response.data = game;
         }
       }
 
+      res.writeHead(status, { "Content-Type": "Application/json" });
       res.end(JSON.stringify(response));
     });
 });
 
 server.listen(port, () => {
-  console.log(port);
+  console.log(`${port}`);
 });
