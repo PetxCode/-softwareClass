@@ -21,14 +21,37 @@ const server = http.createServer((req, res) => {
     .on("end", () => {
       body = Buffer.concat(bodySection).toString();
 
-      res.writeHead(200, { "Content-Type": "Application/json" });
+      let status = 404;
+      const response = {
+        result: false,
+        data: null,
+      };
 
-      res.end(
-        JSON.stringify({
-          message: "success",
-          data: game,
-        })
-      );
+      if (method === "GET" && url === "/") {
+        status = 200;
+        response.result = true;
+        response.data = game;
+      }
+
+      if (method === "POST" && url === "/") {
+        const { id, name } = JSON.parse(body);
+
+        if (!id || !name) {
+          status = 404;
+          response.report = false;
+          response.mgs = "You should enter both id and name";
+          response.data = null;
+        } else {
+          game.push({ id, name });
+
+          status = 201;
+          response.report = true;
+          response.data = game;
+        }
+      }
+
+      res.writeHead(status, { "Content-Type": "Application/json" });
+      res.end(JSON.stringify(response));
     });
 });
 
