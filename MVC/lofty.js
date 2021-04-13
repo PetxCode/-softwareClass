@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const port = 2100;
+const port = process.env.PORT || 2100;
 const app = express();
 const LOCAL_DB = "mongodb://localhost/software";
 const ONLINE_DB =
